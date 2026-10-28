@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}What-If Intervention Simulation Sandbox{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-white">
+                What-If Intervention <span class="text-gradient-primary">Simulation Sandbox</span>
+            </h1>
+            <p class="text-slate-400 text-sm mt-1">
+                Test hypothetical behavioral improvements (e.g. attendance +15%) and observe how predicted outcome shifts before applying interventions.
+            </p>
+        </div>
+        <div class="inline-flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-400 text-xs font-bold">
+            <i class="fas fa-bolt"></i>
+            <span>Real-Time Counterfactual Engine</span>
+        </div>
+    </div>
+
+    <!-- Top Comparative Results Banner -->
+    <div class="glass-panel p-6 rounded-2xl border-l-4 border-l-purple-500 grid grid-cols-1 sm:grid-cols-4 gap-6 items-center">
+        <div>
+            <span class="text-xs font-bold uppercase text-slate-400">Baseline Score</span>
+            <div id="sim-base-score" class="text-3xl font-black text-slate-300 mt-1">71.5%</div>
+            <span class="text-xs text-slate-500 font-medium">Original Parameters</span>
+        </div>
+
+        <div>
+            <span class="text-xs font-bold uppercase text-slate-400">Simulated Score</span>
+            <div id="sim-target-score" class="text-3xl font-black text-indigo-400 mt-1">79.2%</div>
+            <span id="sim-target-badge" class="text-xs px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-bold border border-indigo-500/30 inline-block mt-1">On Track</span>
+        </div>
+
+        <div>
+            <span class="text-xs font-bold uppercase text-slate-400">Net Improvement Delta</span>
+            <div id="sim-delta" class="text-3xl font-black text-emerald-400 mt-1">+7.7%</div>
+            <span class="text-xs text-emerald-400 font-medium"><i class="fas fa-arrow-up mr-1"></i>Potential Gain</span>
+        </div>
+
+        <div class="sm:border-l sm:border-slate-800 sm:pl-6">
+            <span class="text-xs font-bold uppercase text-slate-400">Impact Assessment</span>
+            <p id="sim-nlp-summary" class="text-xs text-slate-300 mt-1 leading-relaxed">
+                Adjust any right-side slider to observe simulated score impact in real time.
+            </p>
+        </div>
+    </div>
+
+    <!-- Dual Sliders Grid -->
+    <form id="sim-form" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        <!-- Left Panel: Baseline Parameters -->
+        <div class="glass-panel p-6 rounded-2xl space-y-5 bg-slate-900/60">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="font-bold text-base text-slate-300 flex items-center space-x-2">
+                    <i class="fas fa-history text-slate-400"></i>
+                    <span>Baseline Student Input</span>
+                </h3>
+                <span class="text-xs text-slate-500 font-mono">FIXED ORIGINAL</span>
+            </div>
+
+            <!-- Attendance -->
+            <div>
+                <div class="flex justify-between items-center mb-1">
+                    <label class="text-xs font-semibold text-slate-300">Attendance Rate</label>
+                    <span id="base-attendance-val" class="text-xs font-bold text-slate-400">60%</span>
+                </div>
+                <input type="range" id="base-attendance" min="40" max="100" value="60" step="1">
+            </div>
+
+            <!-- Study Hours -->
+            <div>
+                <div class="flex justify-between items-center mb-1">
+                    <label class="text-xs font-semibold text-slate-300">Weekly Study Hours</label>
+                    <span id="base-study-val" class="text-xs font-bold text-slate-400">12 hrs/wk</span>
+                </div>
+                <input type="range" id="base-study" min="0" max="40" value="12" step="1">
+            </div>
+
+            <!-- Past Grade -->
+            <div>
+                <div class="flex justify-between items-center mb-1">
+                    <label class="text-xs font-semibold text-slate-300">Past Semester Grade</label>
+                    <span id="base-grade-val" class="text-xs font-bold text-slate-400">65%</span>
+                </div>
+                <input type="range" id="base-grade" min="35" max="100" value="65" step="1">
+            </div>
+
+            <!-- Assignment Completion -->
+            <div>
+                <div class="flex justify-between items-center mb-1">
+                    <label class="text-xs font-semibold text-slate-300">Assignment Completion</label>
+                    <span id="base-assignment-val" class="text-xs font-bold text-slate-400">60%</span>
+                </div>
+                <input type="range" id="base-assignment" min="30" max="100" value="60" step="1">
+            </div>
+
+            <!-- Sleep Hours -->
+            <div>
+                <div class="flex justify-between items-center mb-1">
+                    <label class="text-xs font-semibold text-slate-300">Daily Sleep Hours</label>
+                    <span id="base-sleep-val" class="text-xs font-bold text-slate-400">5 hrs/day</span>
+                </div>
+                <input type="range" id="base-sleep" min="4" max="11" value="5" step="0.5">
+            </div>
+
+            <!-- Extracurricular Score -->
+            <div>
+                <div class="flex justify-between items-center mb-1">
+                    <label class="text-xs font-semibold text-slate-300">Extracurricular Activity</label>
+                    <span id="base-extra-val" class="text-xs font-bold text-slate-400">4/10</span>
+                </div>
+                <input type="range" id="base-extra" min="0" max="10" value="4" step="1">
+            </div>
+        </div>
+
+        <!-- Right Panel: Modified Simulated Parameters -->
+        <div class="glass-panel p-6 rounded-2xl space-y-5 border-2 border-indigo-500/40 bg-indigo-950/20 shadow-xl">
+            <div class="flex items-center justify-between border-b border-indigo-500/30 pb-3">
+                <h3 class="font-bold text-base text-indigo-300 flex items-center space-x-2">
+                    <i class="fas fa-sliders-h text-indigo-400"></i>
+                    <span>Simulated Intervention Target</span>
+                </h3>
+                <span class="text-xs px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-bold border border-indigo-500/30">INTERACTIVE TARGET</span>
+            </div>
+
+            <!-- Attendance -->
+            <div>
+                <div class="flex justify-between items-center mb-1">
+                    <label class="text-xs font-semibold text-indigo-200">Attendance Target</label>
+                    <span id="sim-attendance-val" class="text-xs font-extrabold text-emerald-400">80%</span>
+                </div>
+                <input type="range" id="sim-attendance" min="40" max="100" value="80" step="1">
+            </div>
+
+            <!-- Study Hours -->
+            <div>
+                <div class="flex justify-between items-center mb-1">
+                    <label class="text-xs font-semibold text-indigo-200">Study Hours Target</label>
+                    <span id="sim-study-val" class="text-xs font-extrabold text-indigo-400">18 hrs/wk</span>
+                </div>
+                <input type="range" id="sim-study" min="0" max="40" value="18" step="1">
+            </div>
+
+            <!-- Past Grade -->
+            <div>
+                <div class="flex justify-between items-center mb-1">
+                    <label class="text-xs font-semibold text-indigo-200">Past Grade Baseline</label>
+                    <span id="sim-grade-val" class="text-xs font-bold text-indigo-300">65%</span>
+                </div>
+                <input type="range" id="sim-grade" min="35" max="100" value="65" step="1">
+            </div>
+
+            <!-- Assignment Completion -->
+            <div>
+                <div class="flex justify-between items-center mb-1">
+                    <label class="text-xs font-semibold text-indigo-200">Assignment Target</label>
+                    <span id="sim-assignment-val" class="text-xs font-extrabold text-indigo-400">85%</span>
+                </div>
+                <input type="range" id="sim-assignment" min="30" max="100" value="85" step="1">
+            </div>
+
+            <!-- Sleep Hours -->
+            <div>
+                <div class="flex justify-between items-center mb-1">
+                    <label class="text-xs font-semibold text-indigo-200">Sleep Target</label>
+                    <span id="sim-sleep-val" class="text-xs font-extrabold text-indigo-400">7.5 hrs/day</span>
+                </div>
+                <input type="range" id="sim-sleep" min="4" max="11" value="7.5" step="0.5">
+            </div>
+
+            <!-- Extracurricular Score -->
+            <div>
+                <div class="flex justify-between items-center mb-1">
+                    <label class="text-xs font-semibold text-indigo-200">Extracurricular Target</label>
+                    <span id="sim-extra-val" class="text-xs font-bold text-indigo-300">4/10</span>
+                </div>
+                <input type="range" id="sim-extra" min="0" max="10" value="4" step="1">
+            </div>
+        </div>
+
+    </form>
+
+    <!-- Simulated SHAP Waterfall -->
+    <div class="glass-panel p-6 rounded-2xl space-y-4">
+        <h3 class="font-bold text-lg text-white">Simulated SHAP Contribution Re-Evaluation</h3>
+        <div class="h-72 relative">
+            <canvas id="sim-waterfall-chart"></canvas>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/simulation.js') }}"></script>
+{% endblock %}

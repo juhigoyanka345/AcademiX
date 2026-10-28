@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Audit History & Intervention Trail{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-white">
+                Prediction Audit Log & <span class="text-gradient-primary">Intervention History</span>
+            </h1>
+            <p class="text-slate-400 text-sm mt-1">
+                Auditable database timeline stored in SQLite to track prediction evaluations, progress changes, and counselor interventions over time.
+            </p>
+        </div>
+        <div class="inline-flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 text-xs font-bold">
+            <i class="fas fa-database text-indigo-400"></i>
+            <span>SQLite Auditable Logs</span>
+        </div>
+    </div>
+
+    <!-- Prediction History Table -->
+    <div class="glass-panel p-6 rounded-2xl space-y-4">
+        <h3 class="font-bold text-lg text-white flex items-center space-x-2">
+            <i class="fas fa-file-alt text-indigo-400"></i>
+            <span>Historical Prediction Logs</span>
+        </h3>
+
+        {% if history %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-slate-300">
+                <thead class="text-xs text-slate-400 uppercase bg-slate-900/80 border-b border-slate-800">
+                    <tr>
+                        <th class="px-4 py-3">Timestamp</th>
+                        <th class="px-4 py-3">Student Name</th>
+                        <th class="px-4 py-3">Department</th>
+                        <th class="px-4 py-3">Attendance</th>
+                        <th class="px-4 py-3">Study Hours</th>
+                        <th class="px-4 py-3">Past Grade</th>
+                        <th class="px-4 py-3">Predicted Score</th>
+                        <th class="px-4 py-3">Category</th>
+                        <th class="px-4 py-3">Evaluator</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800">
+                    {% for h in history %}
+                    <tr class="hover:bg-slate-800/40 transition-colors">
+                        <td class="px-4 py-3 text-xs text-slate-400 font-mono">{{ h.timestamp[:19] }}</td>
+                        <td class="px-4 py-3 font-bold text-white">{{ h.student_name }} <span class="text-xs text-slate-400">({{ h.student_code }})</span></td>
+                        <td class="px-4 py-3 text-xs text-slate-300">{{ h.department }}</td>
+                        <td class="px-4 py-3 font-semibold">{{ h.attendance }}%</td>
+                        <td class="px-4 py-3 font-semibold">{{ h.study_hours }} hrs/wk</td>
+                        <td class="px-4 py-3 font-semibold">{{ h.past_grade }}%</td>
+                        <td class="px-4 py-3 font-extrabold text-indigo-400 text-base">{{ h.predicted_score }}%</td>
+                        <td class="px-4 py-3">
+                            <span class="px-2.5 py-1 rounded-full text-xs font-bold 
+                                {% if h.performance_category == 'Excellence' %} bg-emerald-500/20 text-emerald-400 border border-emerald-500/30
+                                {% elif h.performance_category == 'On Track' %} bg-blue-500/20 text-blue-400 border border-blue-500/30
+                                {% elif h.performance_category == 'Moderate Risk' %} bg-amber-500/20 text-amber-400 border border-amber-500/30
+                                {% else %} bg-rose-500/20 text-rose-400 border border-rose-500/30 {% endif %}">
+                                {{ h.performance_category }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-xs text-slate-400">{{ h.evaluator_name or 'System Educator' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-xs text-slate-500 py-4">No prediction logs recorded yet.</p>
+        {% endif %}
+    </div>
+
+    <!-- Intervention Trail Table -->
+    <div class="glass-panel p-6 rounded-2xl space-y-4">
+        <h3 class="font-bold text-lg text-white flex items-center space-x-2">
+            <i class="fas fa-tasks text-emerald-400"></i>
+            <span>Intervention Audit Trail</span>
+        </h3>
+
+        {% if interventions %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-slate-300">
+                <thead class="text-xs text-slate-400 uppercase bg-slate-900/80 border-b border-slate-800">
+                    <tr>
+                        <th class="px-4 py-3">Created Date</th>
+                        <th class="px-4 py-3">Student</th>
+                        <th class="px-4 py-3">Target Metric</th>
+                        <th class="px-4 py-3">Baseline</th>
+                        <th class="px-4 py-3">Target Goal</th>
+                        <th class="px-4 py-3">Status</th>
+                        <th class="px-4 py-3">Notes</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800">
+                    {% for item in interventions %}
+                    <tr class="hover:bg-slate-800/40 transition-colors">
+                        <td class="px-4 py-3 text-xs text-slate-400 font-mono">{{ item.created_at[:16] }}</td>
+                        <td class="px-4 py-3 font-bold text-white">{{ item.student_name }}</td>
+                        <td class="px-4 py-3 font-semibold text-indigo-300 capitalize">{{ item.target_feature.replace('_', ' ') }}</td>
+                        <td class="px-4 py-3 text-rose-400 font-bold">{{ item.baseline_value }}</td>
+                        <td class="px-4 py-3 text-emerald-400 font-bold">{{ item.target_value }}</td>
+                        <td class="px-4 py-3">
+                            <span class="px-2 py-0.5 rounded text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                                {{ item.status }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-xs text-slate-400">{{ item.notes or 'No notes recorded' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-xs text-slate-500 py-4">No intervention records logged yet.</p>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

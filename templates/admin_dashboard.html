@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+
+{% block title %}College Admin Panel | Student Performance XAI{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-400 text-xs font-bold uppercase tracking-wider mb-2">
+                <i class="fas fa-crown"></i>
+                <span>College Administrator Control Center</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-white">
+                Institutional <span class="text-gradient-primary">Management & Onboarding</span>
+            </h1>
+            <p class="text-slate-400 text-sm mt-1">
+                Onboard faculty members, manage student rosters across departments, and oversee system analytics.
+            </p>
+        </div>
+        <div class="flex items-center space-x-3">
+            <button onclick="document.getElementById('modal-onboard-faculty').classList.remove('hidden')" class="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-extrabold text-sm shadow-lg shadow-purple-600/30 transition-all flex items-center space-x-2">
+                <i class="fas fa-user-plus"></i>
+                <span>Onboard Faculty Member</span>
+            </button>
+            <button onclick="document.getElementById('modal-add-student').classList.remove('hidden')" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-sm shadow-lg shadow-indigo-600/30 transition-all flex items-center space-x-2">
+                <i class="fas fa-graduation-cap"></i>
+                <span>Add Student to Roster</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Stat Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div class="glass-panel p-6 rounded-xl flex items-center justify-between">
+            <div>
+                <span class="text-xs font-semibold uppercase text-slate-400">Total Onboarded Faculty</span>
+                <div class="text-3xl font-extrabold text-white mt-1">{{ total_faculty }}</div>
+                <span class="text-xs text-purple-400 font-medium mt-1 inline-block"><i class="fas fa-chalkboard-teacher mr-1"></i>Active Teachers</span>
+            </div>
+            <div class="h-12 w-12 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center text-xl">
+                <i class="fas fa-user-tie"></i>
+            </div>
+        </div>
+
+        <div class="glass-panel p-6 rounded-xl flex items-center justify-between">
+            <div>
+                <span class="text-xs font-semibold uppercase text-slate-400">Enrolled Students Roster</span>
+                <div class="text-3xl font-extrabold text-white mt-1">{{ total_students }}</div>
+                <span class="text-xs text-emerald-400 font-medium mt-1 inline-block"><i class="fas fa-users mr-1"></i>Across Departments</span>
+            </div>
+            <div class="h-12 w-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl">
+                <i class="fas fa-user-graduate"></i>
+            </div>
+        </div>
+
+        <div class="glass-panel p-6 rounded-xl flex items-center justify-between">
+            <div>
+                <span class="text-xs font-semibold uppercase text-slate-400">Total System XAI Evaluated</span>
+                <div class="text-3xl font-extrabold text-white mt-1">{{ total_predictions }}</div>
+                <span class="text-xs text-indigo-400 font-medium mt-1 inline-block"><i class="fas fa-microchip mr-1"></i>SHAP Logs Saved</span>
+            </div>
+            <div class="h-12 w-12 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xl">
+                <i class="fas fa-database"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Management Tables Split -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        <!-- Faculty Roster Table -->
+        <div class="glass-panel p-6 rounded-2xl space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="font-bold text-lg text-white flex items-center space-x-2">
+                    <i class="fas fa-chalkboard-teacher text-purple-400"></i>
+                    <span>Faculty & Teacher Roster</span>
+                </h3>
+                <span class="text-xs text-slate-400 font-mono">{{ faculty_members|length }} Members</span>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-300">
+                    <thead class="text-xs text-slate-400 uppercase bg-slate-900/80 border-b border-slate-800">
+                        <tr>
+                            <th class="px-4 py-3">Faculty Name</th>
+                            <th class="px-4 py-3">Username / Email</th>
+                            <th class="px-4 py-3">Department</th>
+                            <th class="px-4 py-3">Role</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800">
+                        {% for f in faculty_members %}
+                        <tr class="hover:bg-slate-800/40 transition-colors">
+                            <td class="px-4 py-3 font-bold text-white">{{ f.full_name }}</td>
+                            <td class="px-4 py-3 text-xs text-slate-400 font-mono">{{ f.username }}<br><span class="text-slate-500">{{ f.email }}</span></td>
+                            <td class="px-4 py-3 text-xs text-indigo-300 font-semibold">{{ f.department or 'General' }}</td>
+                            <td class="px-4 py-3">
+                                <span class="px-2.5 py-0.5 rounded text-xs font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">Faculty</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Student Roster Table -->
+        <div class="glass-panel p-6 rounded-2xl space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="font-bold text-lg text-white flex items-center space-x-2">
+                    <i class="fas fa-user-graduate text-emerald-400"></i>
+                    <span>College Student Roster</span>
+                </h3>
+                <span class="text-xs text-slate-400 font-mono">{{ students_list|length }} Enrolled</span>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-300">
+                    <thead class="text-xs text-slate-400 uppercase bg-slate-900/80 border-b border-slate-800">
+                        <tr>
+                            <th class="px-4 py-3">Student Name</th>
+                            <th class="px-4 py-3">Code / Email</th>
+                            <th class="px-4 py-3">Department</th>
+                            <th class="px-4 py-3">Assigned Faculty</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800">
+                        {% for s in students_list %}
+                        <tr class="hover:bg-slate-800/40 transition-colors">
+                            <td class="px-4 py-3 font-bold text-white">{{ s.name }} <span class="text-xs text-slate-400">({{ s.grade_level }})</span></td>
+                            <td class="px-4 py-3 text-xs text-slate-400 font-mono">{{ s.student_code }}<br><span class="text-slate-500">{{ s.email or 'N/A' }}</span></td>
+                            <td class="px-4 py-3 text-xs font-semibold text-slate-300">{{ s.department }}</td>
+                            <td class="px-4 py-3 text-xs font-semibold text-indigo-400">{{ s.faculty_name or 'Unassigned' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Modal 1: Onboard Faculty -->
+<div id="modal-onboard-faculty" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+    <div class="glass-panel p-6 rounded-2xl max-w-md w-full border border-purple-500/30 space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <h3 class="font-bold text-lg text-white"><i class="fas fa-user-plus text-purple-400 mr-2"></i>Onboard Faculty Member</h3>
+            <button onclick="document.getElementById('modal-onboard-faculty').classList.add('hidden')" class="text-slate-400 hover:text-white"><i class="fas fa-times text-lg"></i></button>
+        </div>
+        <form action="{{ url_for('admin_onboard_faculty') }}" method="POST" class="space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Full Name & Title</label>
+                <input type="text" name="full_name" placeholder="Dr. Robert Vance" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Username</label>
+                    <input type="text" name="username" placeholder="prof_vance" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Department</label>
+                    <input type="text" name="department" placeholder="Computer Science" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white">
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Email</label>
+                <input type="email" name="email" placeholder="vance@college.edu" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Initial Password</label>
+                <input type="password" name="password" value="faculty123" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white">
+            </div>
+            <button type="submit" class="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-sm shadow-lg shadow-purple-600/30">
+                Confirm Faculty Onboarding &rarr;
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal 2: Add Student -->
+<div id="modal-add-student" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+    <div class="glass-panel p-6 rounded-2xl max-w-md w-full border border-indigo-500/30 space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <h3 class="font-bold text-lg text-white"><i class="fas fa-graduation-cap text-indigo-400 mr-2"></i>Add Student to Roster</h3>
+            <button onclick="document.getElementById('modal-add-student').classList.add('hidden')" class="text-slate-400 hover:text-white"><i class="fas fa-times text-lg"></i></button>
+        </div>
+        <form action="{{ url_for('admin_create_student') }}" method="POST" class="space-y-4">
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Student Code</label>
+                    <input type="text" name="student_code" placeholder="STU-1006" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Grade Level</label>
+                    <select name="grade_level" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white">
+                        <option>Year 1</option>
+                        <option>Year 2</option>
+                        <option>Year 3</option>
+                        <option>Year 4</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Full Name</label>
+                <input type="text" name="name" placeholder="Fiona Gallagher" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Email</label>
+                <input type="email" name="email" placeholder="fiona@student.edu" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Department</label>
+                <input type="text" name="department" placeholder="Computer Science" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Assigned Faculty Advisor</label>
+                <select name="assigned_faculty_id" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white">
+                    <option value="">-- Select Faculty Advisor --</option>
+                    {% for f in faculty_members %}
+                    <option value="{{ f.id }}">{{ f.full_name }} ({{ f.department }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm shadow-lg shadow-indigo-600/30">
+                Save Student Record &rarr;
+            </button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

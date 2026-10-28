@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AI Student Performance & XAI Multi-Role Platform{% endblock %}</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            900: '#064e3b'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="bg-slate-950 text-slate-100 flex flex-col min-h-screen">
+
+    <!-- Top Navigation Bar -->
+    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            
+            <!-- Logo & Brand -->
+            <a href="/" class="flex items-center space-x-3">
+                <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-indigo-500/30">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <div>
+                    <span class="font-extrabold text-lg text-white tracking-wide">Predictive<span class="text-indigo-400">XAI</span></span>
+                    <span class="block text-[10px] text-slate-400 uppercase tracking-widest font-semibold">Student Performance Platform</span>
+                </div>
+            </a>
+
+            <!-- Dynamic Role-Based Navigation -->
+            <nav class="hidden md:flex items-center space-x-1">
+                {% if session.get('role') == 'admin' %}
+                    <a href="{{ url_for('admin_dashboard') }}" class="px-4 py-2 rounded-lg text-sm font-medium transition-all hover:bg-slate-800 {{ 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' if request.path == '/admin/dashboard' else 'text-slate-300' }}">
+                        <i class="fas fa-user-shield mr-2"></i>Admin Panel
+                    </a>
+                    <a href="{{ url_for('faculty_dashboard') }}" class="px-4 py-2 rounded-lg text-sm font-medium transition-all hover:bg-slate-800 {{ 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' if request.path == '/faculty/dashboard' else 'text-slate-300' }}">
+                        <i class="fas fa-chalkboard-teacher mr-2"></i>Faculty View
+                    </a>
+                {% elif session.get('role') == 'faculty' %}
+                    <a href="{{ url_for('faculty_dashboard') }}" class="px-4 py-2 rounded-lg text-sm font-medium transition-all hover:bg-slate-800 {{ 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' if request.path == '/faculty/dashboard' or request.path == '/dashboard' else 'text-slate-300' }}">
+                        <i class="fas fa-chart-line mr-2"></i>Dashboard
+                    </a>
+                    <a href="{{ url_for('predict_page') }}" class="px-4 py-2 rounded-lg text-sm font-medium transition-all hover:bg-slate-800 {{ 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' if request.path == '/predict' else 'text-slate-300' }}">
+                        <i class="fas fa-calculator mr-2"></i>Individual XAI
+                    </a>
+                    <a href="{{ url_for('simulation_page') }}" class="px-4 py-2 rounded-lg text-sm font-medium transition-all hover:bg-slate-800 {{ 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' if request.path == '/simulation' else 'text-slate-300' }}">
+                        <i class="fas fa-sliders-h mr-2"></i>What-If Simulation
+                    </a>
+                    <a href="{{ url_for('cohort_page') }}" class="px-4 py-2 rounded-lg text-sm font-medium transition-all hover:bg-slate-800 {{ 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' if request.path == '/cohort' else 'text-slate-300' }}">
+                        <i class="fas fa-users-class mr-2"></i>Class Insights
+                    </a>
+                    <a href="{{ url_for('history_page') }}" class="px-4 py-2 rounded-lg text-sm font-medium transition-all hover:bg-slate-800 {{ 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' if request.path == '/history' else 'text-slate-300' }}">
+                        <i class="fas fa-history mr-2"></i>Audit Trail
+                    </a>
+                {% elif session.get('role') == 'student' %}
+                    <a href="{{ url_for('student_dashboard') }}" class="px-4 py-2 rounded-lg text-sm font-medium transition-all hover:bg-slate-800 {{ 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' if request.path == '/student/dashboard' else 'text-slate-300' }}">
+                        <i class="fas fa-graduation-cap mr-2"></i>My Scorecard
+                    </a>
+                    <a href="{{ url_for('student_simulator') }}" class="px-4 py-2 rounded-lg text-sm font-medium transition-all hover:bg-slate-800 {{ 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' if request.path == '/student/simulator' else 'text-slate-300' }}">
+                        <i class="fas fa-rocket mr-2"></i>Self-Improvement Sandbox
+                    </a>
+                {% endif %}
+            </nav>
+
+            <!-- User Menu -->
+            <div class="flex items-center space-x-3">
+                {% if session.get('user_id') %}
+                <div class="hidden sm:flex flex-col text-right">
+                    <span class="text-sm font-bold text-slate-200">{{ session.get('full_name') }}</span>
+                    <span class="text-xs text-indigo-400 font-bold uppercase tracking-wider">
+                        {% if session.get('role') == 'admin' %}
+                            <span class="text-purple-400"><i class="fas fa-crown mr-1"></i>College Admin</span>
+                        {% elif session.get('role') == 'faculty' %}
+                            <span class="text-indigo-400"><i class="fas fa-chalkboard-teacher mr-1"></i>Faculty Member</span>
+                        {% else %}
+                            <span class="text-emerald-400"><i class="fas fa-user-graduate mr-1"></i>Student Portal</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <a href="{{ url_for('logout') }}" class="p-2 rounded-lg bg-slate-800 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors" title="Logout">
+                    <i class="fas fa-sign-out-alt text-lg"></i>
+                </a>
+                {% else %}
+                <a href="{{ url_for('login') }}" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all shadow-md shadow-indigo-600/30">
+                    Sign In
+                </a>
+                <a href="{{ url_for('register_student') }}" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold border border-slate-700 transition-all">
+                    Register Student
+                </a>
+                {% endif %}
+            </div>
+
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="mb-6 space-y-2">
+            {% for category, message in messages %}
+              <div class="p-4 rounded-xl text-sm font-medium border flex items-center justify-between {{ 'bg-emerald-950/70 border-emerald-500/40 text-emerald-300' if category == 'success' else 'bg-rose-950/70 border-rose-500/40 text-rose-300' }}">
+                <div class="flex items-center space-x-2">
+                    <i class="fas {{ 'fa-check-circle' if category == 'success' else 'fa-exclamation-circle' }}"></i>
+                    <span>{{ message }}</span>
+                </div>
+              </div>
+            {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-50 space-y-3 pointer-events-none"></div>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 py-6 text-center text-xs text-slate-500 bg-slate-900/40">
+        <p>AI-Driven Student Performance Prediction System with Multi-Role XAI Integration</p>
+        <p class="mt-1 text-slate-600">College Admin • Faculty • Student Portal | Flask + SHAP + Tailwind CSS + SQLite</p>
+    </footer>
+
+    <!-- App Scripts -->
+    <script src="{{ url_for('static', filename='js/api.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

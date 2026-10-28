@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Class-Level Aggregated XAI Insights{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-white">
+                Class-Level Aggregated <span class="text-gradient-primary">XAI Insights</span>
+            </h1>
+            <p class="text-slate-400 text-sm mt-1">
+                Aggregates SHAP explanations across all students to uncover cohort-wide vulnerabilities and justify group-level policies.
+            </p>
+        </div>
+        <div class="inline-flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 text-xs font-bold">
+            <i class="fas fa-layer-group"></i>
+            <span>Cohort Intelligence View</span>
+        </div>
+    </div>
+
+    <!-- Summary NLP Box -->
+    <div class="glass-panel p-6 rounded-2xl border-l-4 border-l-indigo-500 bg-gradient-to-r from-indigo-950/40 to-slate-900">
+        <h3 class="text-xs font-bold uppercase text-indigo-400 tracking-wider mb-2">Cohort Executive Summary</h3>
+        <p class="text-base text-slate-200 leading-relaxed">
+            {{ cohort.insights_summary }}
+        </p>
+    </div>
+
+    <!-- Analytics Split -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Cohort Feature Impact Bar Chart -->
+        <div class="lg:col-span-7 glass-panel p-6 rounded-2xl space-y-4">
+            <h3 class="font-bold text-lg text-white">Average SHAP Impact Across Entire Cohort</h3>
+            <p class="text-xs text-slate-400">Positive values boost average class scores; negative values drag cohort performance down.</p>
+            <div class="h-80 relative">
+                <canvas id="cohort-impact-canvas"></canvas>
+            </div>
+        </div>
+
+        <!-- Top Risk Drivers Ranking Table -->
+        <div class="lg:col-span-5 glass-panel p-6 rounded-2xl space-y-4 flex flex-col justify-between">
+            <div>
+                <h3 class="font-bold text-lg text-white mb-2">Class-Wide Vulnerability Ranking</h3>
+                <p class="text-xs text-slate-400 mb-4">Percentage of evaluated students significantly hindered by each factor.</p>
+
+                <div class="space-y-3">
+                    {% for risk in cohort.top_class_risk_factors %}
+                    <div class="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+                        <div>
+                            <div class="font-bold text-slate-200 text-sm">{{ risk.label }}</div>
+                            <div class="text-xs text-slate-400">{{ risk.affected_student_count }} students affected</div>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-lg font-black text-rose-400">{{ risk.affected_percentage }}%</span>
+                            <span class="block text-[10px] text-slate-500">Cohort Impact</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="p-4 rounded-xl bg-indigo-950/40 border border-indigo-500/30 text-xs text-indigo-200 mt-4">
+                <i class="fas fa-bullhorn mr-1 text-indigo-400"></i>
+                <strong>Educator Policy Recommendation:</strong> Implement a mandatory class-wide workshop addressing the top ranked vulnerability.
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const shapAvgs = {{ cohort.cohort_shap_averages | tojson }};
+        AppCharts.renderCohortImpact('cohort-impact-canvas', shapAvgs);
+    });
+</script>
+{% endblock %}
