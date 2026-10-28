@@ -1,0 +1,15 @@
+# Python virtualenv & binary cache
+__pycache__/
+*.py[cod]
+python_env/
+python_installer.exe
+python-embed.zip
+mingit.zip
+
+# SQLite local database
+instance/*.sqlite
+*.sqlite
+
+# OS generated files
+.DS_Store
+Thumbs.db
